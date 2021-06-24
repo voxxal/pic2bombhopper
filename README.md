@@ -22,7 +22,12 @@ yarn start --help
 
 Examples:
 
+```
+yarn start mario.png
+```
 
+```
+yarn start -g 10 -o smile.json smile.png
 
 ```
 
