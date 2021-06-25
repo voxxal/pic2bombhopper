@@ -28,12 +28,10 @@ yarn start mario.png
 
 ```
 yarn start -g 10 -o smile.json smile.png
-
 ```
 
 TODO (not in any particular order):
-spatial partitioning method
-partial transparancy
-offset
-usage to existing levels
-```
+spatial partitioning method  
+partial transparancy  
+offset  
+usage to existing levels  
