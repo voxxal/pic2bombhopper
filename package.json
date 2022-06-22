@@ -2,7 +2,7 @@
   "name": "pic2bombhopper",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js"
   },

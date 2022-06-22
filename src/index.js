@@ -14,8 +14,11 @@ program
   .option("-g, --grid-size <grid-size>", "Grid Size of pixels", 20)
   .action((image, options) => {
     if (options.debug) logger.info(options);
-    if (options.gridSize)
+    if (options.gridSize) {
+      options.gridSize = parseInt(options.gridSize);
+      if (isNaN(options.gridSize)) throw new Error("Grid size is not a number")
       logger.info(`Building with a grid size of ${options.gridSize}`);
+    }
     Jimp.read(image)
       .then((image) => {
         logger.info("Successfully read image.");
@@ -39,7 +42,7 @@ program
         };
         if (width * height >= 2048) {
           logger.warn(
-            `This tool was created for pixel art. Using bigger images may lag the game and create large files. This image will create ${
+            `This tool was created for pixel art. Using bigger images may lag the game and create large files. This image (at max) will create ${
               width * height
             } objects.`
           );
@@ -51,15 +54,12 @@ program
           const alpha = image.bitmap.data[idx + 3];
           if (alpha === 0) {
             return;
-          } else if (alpha <= 254) {
-            logger.warn(
-              "Bombhopper currently does not support partial transparency, will default to no transparency"
-            );
           }
           level.entities.push({
             type: "paint",
             params: {
               fillColor: util.rgbToDec(red, green, blue),
+              opacity: alpha / 255,
               vertices: [
                 {
                   x: x * options.gridSize,
