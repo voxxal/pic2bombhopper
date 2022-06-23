@@ -1,7 +1,7 @@
 # pic2bombhopper
 
 ## utility to turn images into bombhopper levels
-
+# THIS IS OUTDATED INFORMATION, NOW YOU SHOULD USE RUST (binaries coming soon)
 Prerequisites:
 
 - Install [node.js](https://nodejs.org/)

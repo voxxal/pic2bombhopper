@@ -1,7 +1,7 @@
 const { program } = require("commander");
 const Jimp = require("jimp");
 const fs = require("fs");
-const logger = require("./log");
+const logger = require("../src/log");
 const util = require("./util");
 program
   .version("0.0.1")

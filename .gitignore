@@ -1,5 +1,2 @@
-.yarn/*
-!.yarn/releases
-!.yarn/plugins
-.pnp.*
 level.json
+/target
