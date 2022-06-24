@@ -1,6 +1,6 @@
 use clap::Parser;
 use image::GenericImageView;
-use level::{Entity, Level, Params, Point};
+use level::{Entity, Level, Point};
 use log::{error, info, warn};
 use std::{
     fs::File,
@@ -99,20 +99,17 @@ fn main() {
                 if alpha == 0 {
                     continue;
                 }
-                level.push(Entity {
-                    r#type: String::from("paint"),
-                    params: Params::Paint {
-                        fill_color: red as i32 * 16_i32.pow(4)
-                            + blue as i32 * 16_i32.pow(2)
-                            + green as i32,
-                        opacity: (alpha as f32) / 255.0,
-                        vertices: vec![
-                            Point::new(x * args.pixel_size, y * args.pixel_size),
-                            Point::new((x + 1.0) * args.pixel_size, y * args.pixel_size),
-                            Point::new((x + 1.0) * args.pixel_size, (y + 1.0) * args.pixel_size),
-                            Point::new(x * args.pixel_size, (y + 1.0) * args.pixel_size),
-                        ],
-                    },
+                level.push(Entity::Paint {
+                    fill_color: red as i32 * 16_i32.pow(4)
+                        + blue as i32 * 16_i32.pow(2)
+                        + green as i32,
+                    opacity: (alpha as f32) / 255.0,
+                    vertices: vec![
+                        Point::new(x * args.pixel_size, y * args.pixel_size),
+                        Point::new((x + 1.0) * args.pixel_size, y * args.pixel_size),
+                        Point::new((x + 1.0) * args.pixel_size, (y + 1.0) * args.pixel_size),
+                        Point::new(x * args.pixel_size, (y + 1.0) * args.pixel_size),
+                    ],
                 })
             }
 

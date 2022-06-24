@@ -21,8 +21,8 @@ pub enum Bombs {
 }
 
 #[derive(Serialize)]
-#[serde(untagged)] 
-pub enum Params {
+#[serde(rename_all = "lowercase", tag = "type")] 
+pub enum Entity {
     Player {
         isStatic: bool,
         angle: i32,
@@ -35,12 +35,6 @@ pub enum Params {
         opacity: f32,
         vertices: Vec<Point>,
     },
-}
-
-#[derive(Serialize)]
-pub struct Entity {
-    pub r#type: String,
-    pub params: Params,
 }
 
 #[derive(Serialize)]
