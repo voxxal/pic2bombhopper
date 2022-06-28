@@ -1,3 +1,5 @@
+use std::ops::{Add, Sub, Mul};
+
 use serde::Serialize;
 
 #[derive(Serialize)]
@@ -12,8 +14,41 @@ impl Point {
     }
 }
 
+impl Add for Point {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self::Output {
+        Self {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
+    }
+}
+
+impl Sub for Point {
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self::Output {
+        Point {
+            x: self.x - other.x,
+            y: self.y - other.y,
+        }
+    }
+}
+
+impl Mul<f32> for Point {
+    type Output = Self;
+
+    fn mul(self, other: f32) -> Self::Output {
+        Point {
+            x: self.x * other,
+            y: self.y * other,
+        }
+    }
+}
+
 #[derive(Serialize)]
-#[serde(rename_all = "lowercase")]
+#[serde(rename_all = "camelCase")]
 pub enum Bombs {
     Empty,
     Bomb,
@@ -21,15 +56,17 @@ pub enum Bombs {
 }
 
 #[derive(Serialize)]
-#[serde(rename_all = "lowercase", tag = "type")] 
+#[serde(rename_all = "camelCase", tag = "type", content = "params")] 
 pub enum Entity {
+    #[serde(rename_all = "camelCase")]
     Player {
-        isStatic: bool,
+        is_static: bool,
         angle: i32,
         x: f32,
         y: f32,
         magazine: Vec<Bombs>,
     },
+    #[serde(rename_all = "camelCase")]
     Paint {
         fill_color: i32,
         opacity: f32,

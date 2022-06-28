@@ -21,3 +21,8 @@ features = ["webp"]
 [dependencies.serde]
 version = "1.0.137"
 features = ["derive"]
+
+[dependencies.opencv]
+version = "0.65.0"
+default-features = false
+features = ["imgproc", "highgui"]
