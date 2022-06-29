@@ -15,6 +15,8 @@ use std::{
 mod level;
 mod raster;
 
+pub const NEIGHBORS: [(i32, i32); 4] = [(-1, 0), (1, 0), (0, -1), (0, 1)];
+
 enum Method {
     Raster, // Preforms bfs on the image, creating optomized polygons to use for levels
     Pixel,  // Every pixel is its own object
@@ -67,7 +69,7 @@ fn main() {
         }
     };
 
-    let mut method = Method::Pixel;
+    let mut method = Method::Raster;
 
     match file_type {
         Some(kind) => match kind.mime_type() {
@@ -102,8 +104,8 @@ fn main() {
                 }
                 level.push(Entity::Paint {
                     fill_color: red as i32 * 16_i32.pow(4)
-                        + blue as i32 * 16_i32.pow(2)
-                        + green as i32,
+                        + green as i32 * 16_i32.pow(2)
+                        + blue as i32,
                     opacity: (alpha as f32) / 255.0,
                     vertices: vec![
                         Point::new(x * args.scale, y * args.scale),
@@ -119,15 +121,7 @@ fn main() {
             }
         }
         Method::Raster => {
-            let polygons = match get_polygons(image) {
-                Ok(p) => p,
-                Err(e) => {
-                    error!("Something went wrong ({:?})", e);
-                    exit(1)
-                }
-            };
-
-            for (vertices, color) in polygons {
+            for (vertices, color) in get_polygons(image) {
                 let [red, green, blue, alpha] = color.0;
                 if alpha == 0 {
                     continue;
