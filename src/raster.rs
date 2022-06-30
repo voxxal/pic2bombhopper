@@ -15,6 +15,7 @@ fn approx(c1: Rgba<u8>, c2: Rgba<u8>, variance: u8) -> bool {
 
 pub fn get_polygons(image: DynamicImage) -> Vec<(Vec<Point>, Rgba<u8>)> {
     let (width, height) = image.dimensions();
+    let variance = 16;
     let mut visited = vec![vec![false; width as usize]; height as usize];
     let mut polygons: Vec<(Vec<Point>, Rgba<u8>)> = vec![];
 
@@ -23,11 +24,11 @@ pub fn get_polygons(image: DynamicImage) -> Vec<(Vec<Point>, Rgba<u8>)> {
             continue;
         }
         let mut avg_color: Rgba<u32> = color.0.map(|v| v as u32).into();
-        let mut segment: GrayImage = ImageBuffer::from_pixel(width, height, Luma([255]));
+        let mut segment: GrayImage = ImageBuffer::from_pixel(width, height, Luma([0]));
 
         let mut pixels = 0;
         let mut queue = VecDeque::from(vec![(x, y)]);
-        segment.get_pixel_mut(x, y).0 = [0];
+        segment.get_pixel_mut(x, y).0 = [255];
 
         while !queue.is_empty() {
             let (x, y) = queue.pop_front().unwrap();
@@ -36,9 +37,9 @@ pub fn get_polygons(image: DynamicImage) -> Vec<(Vec<Point>, Rgba<u8>)> {
             pixels += 1;
 
             if x as i32 - 1 >= 0 {
-                segment.get_pixel_mut(x - 1, y).0 = [0];
+                segment.get_pixel_mut(x - 1, y).0 = [255];
                 if !visited[x as usize - 1][y as usize]
-                    && approx(current_color, image.get_pixel(x - 1, y), 25)
+                    && approx(current_color, image.get_pixel(x - 1, y), variance)
                 {
                     visited[x as usize - 1][y as usize] = true;
                     queue.push_back((x - 1, y));
@@ -46,9 +47,9 @@ pub fn get_polygons(image: DynamicImage) -> Vec<(Vec<Point>, Rgba<u8>)> {
             }
 
             if x + 1 < width {
-                segment.get_pixel_mut(x + 1, y).0 = [0];
+                segment.get_pixel_mut(x + 1, y).0 = [255];
                 if !visited[x as usize + 1][y as usize]
-                    && approx(current_color, image.get_pixel(x + 1, y), 25)
+                    && approx(current_color, image.get_pixel(x + 1, y), variance)
                 {
                     visited[x as usize + 1][y as usize] = true;
                     queue.push_back((x + 1, y));
@@ -56,9 +57,9 @@ pub fn get_polygons(image: DynamicImage) -> Vec<(Vec<Point>, Rgba<u8>)> {
             }
 
             if y as i32 - 1 >= 0 {
-                segment.get_pixel_mut(x, y - 1).0 = [0];
+                segment.get_pixel_mut(x, y - 1).0 = [255];
                 if !visited[x as usize][y as usize - 1]
-                    && approx(current_color, image.get_pixel(x, y - 1), 25)
+                    && approx(current_color, image.get_pixel(x, y - 1), variance)
                 {
                     visited[x as usize][y as usize - 1] = true;
                     queue.push_back((x, y - 1));
@@ -66,9 +67,9 @@ pub fn get_polygons(image: DynamicImage) -> Vec<(Vec<Point>, Rgba<u8>)> {
             }
 
             if y + 1 < height {
-                segment.get_pixel_mut(x, y + 1).0 = [0];
+                segment.get_pixel_mut(x, y + 1).0 = [255];
                 if !visited[x as usize][y as usize + 1]
-                    && approx(current_color, image.get_pixel(x, y + 1), 25)
+                    && approx(current_color, image.get_pixel(x, y + 1), variance)
                 {
                     visited[x as usize][y as usize + 1] = true;
                     queue.push_back((x, y + 1));
@@ -76,10 +77,14 @@ pub fn get_polygons(image: DynamicImage) -> Vec<(Vec<Point>, Rgba<u8>)> {
             }
         }
 
-        if pixels > 127 {
+        assert!(avg_color.0.iter().all(|v| (*v / (pixels as u32 + 1)) <= 255));
+
+        // Ignore orphen pixels
+        if pixels > 6 {
             let final_color = Rgba::from(avg_color.0.map(|v| (v / (pixels as u32 + 1)) as u8));
             let contours: Vec<Contour<i32>> = find_contours(&segment);
-            segment.save(format!("segments/segment_{}_{}.png", x, y));
+
+            segment.save(format!("segments/segment_{:?}.png", final_color));
             for contour in contours.into_iter() {
                 polygons.push((
                     contour

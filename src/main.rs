@@ -128,8 +128,8 @@ fn main() {
                 }
                 level.push(Entity::Paint {
                     fill_color: red as i32 * 16_i32.pow(4)
-                        + blue as i32 * 16_i32.pow(2)
-                        + green as i32,
+                        + green as i32 * 16_i32.pow(2)
+                        + blue as i32,
                     opacity: (alpha as f32) / 255.0,
                     vertices: vertices.into_iter().map(|p| p * args.scale).collect(),
                 })
