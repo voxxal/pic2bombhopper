@@ -2,7 +2,7 @@
 #![feature(array_zip)]
 use clap::Parser;
 use image::GenericImageView;
-use level::{Entity, Level, Point};
+use bombhopper::{Entity, Level, Point};
 use log::{error, info, warn};
 use raster::get_polygons;
 use std::{
@@ -12,7 +12,6 @@ use std::{
     process::exit,
 };
 
-mod level;
 mod raster;
 
 pub const NEIGHBORS: [(i32, i32); 4] = [(-1, 0), (1, 0), (0, -1), (0, 1)];

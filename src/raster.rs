@@ -3,7 +3,7 @@ use std::collections::VecDeque;
 use image::{DynamicImage, GenericImageView, GrayImage, ImageBuffer, Luma, Rgba};
 use imageproc::contours::{find_contours, Contour};
 
-use crate::level::Point;
+use bombhopper::Point;
 
 /// Does the funny raster thingy (https://github.com/kevinjycui/css-video)
 
@@ -15,7 +15,7 @@ fn approx(c1: Rgba<u8>, c2: Rgba<u8>, variance: u8) -> bool {
 
 pub fn get_polygons(image: DynamicImage) -> Vec<(Vec<Point>, Rgba<u8>)> {
     let (width, height) = image.dimensions();
-    let variance = 16;
+    let variance = 6;
     let mut visited = vec![vec![false; width as usize]; height as usize];
     let mut polygons: Vec<(Vec<Point>, Rgba<u8>)> = vec![];
 
@@ -80,11 +80,11 @@ pub fn get_polygons(image: DynamicImage) -> Vec<(Vec<Point>, Rgba<u8>)> {
         assert!(avg_color.0.iter().all(|v| (*v / (pixels as u32 + 1)) <= 255));
 
         // Ignore orphen pixels
-        if pixels > 6 {
+        if pixels > 12 {
             let final_color = Rgba::from(avg_color.0.map(|v| (v / (pixels as u32 + 1)) as u8));
             let contours: Vec<Contour<i32>> = find_contours(&segment);
 
-            segment.save(format!("segments/segment_{:?}.png", final_color));
+            // segment.save(format!("segments/segment_{:?}.png", final_color));
             for contour in contours.into_iter() {
                 polygons.push((
                     contour
@@ -97,6 +97,5 @@ pub fn get_polygons(image: DynamicImage) -> Vec<(Vec<Point>, Rgba<u8>)> {
             }
         }
     }
-    println!("{}", polygons.len());
     polygons
 }
