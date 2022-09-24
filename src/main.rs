@@ -1,4 +1,3 @@
-#![feature(int_abs_diff)]
 #![feature(array_zip)]
 use clap::Parser;
 use image::GenericImageView;
@@ -13,12 +12,12 @@ use std::{
 };
 
 mod raster;
+mod optimize;
 
 pub const NEIGHBORS: [(i32, i32); 4] = [(-1, 0), (1, 0), (0, -1), (0, 1)];
 
 enum Method {
     Raster, // Preforms bfs on the image, creating optomized polygons to use for levels
-    Pixel,  // Every pixel is its own object
     Svg,    // Draws out svgs
 }
 
@@ -32,6 +31,12 @@ struct Args {
     /// Size of each pixel
     #[clap(short = 's', value_parser, value_name = "scale", default_value = "20")]
     scale: f32,
+    // How close the color of 2 pixels need to be for them to be merged
+    #[clap(short = 'v', value_parser, value_name = "variance", default_value = "6")]
+    variance: u8,
+    // If a polygon consists of less than this many pixels, remove it
+    #[clap(short = 'c', value_parser, value_name = "lower-cut", default_value = "8")]
+    lower_cut: i32,
 
     /// Name of level
     #[clap(
@@ -89,42 +94,13 @@ fn main() {
         }
     };
     match method {
-        Method::Pixel => {
-            info!(
-                "Building level \"{}\" with pixel size of {}.",
-                level.name, args.scale
-            );
-            // TODO don't forget to add the player
-            for (x, y, color) in image.pixels() {
-                let (x, y) = (x as f32, y as f32);
-                let [red, green, blue, alpha] = color.0;
-                if alpha == 0 {
-                    continue;
-                }
-                level.push(Entity::Paint {
-                    fill_color: red as i32 * 16_i32.pow(4)
-                        + green as i32 * 16_i32.pow(2)
-                        + blue as i32,
-                    opacity: (alpha as f32) / 255.0,
-                    vertices: vec![
-                        Point::new(x * args.scale, y * args.scale),
-                        Point::new((x + 1.0) * args.scale, y * args.scale),
-                        Point::new((x + 1.0) * args.scale, (y + 1.0) * args.scale),
-                        Point::new(x * args.scale, (y + 1.0) * args.scale),
-                    ],
-                })
-            }
-
-            if level.entities.len() >= 5000 {
-                warn!("This method was designed for pixel art, consider using the Raster method for more optomized levels. This level has {} objects.", level.entities.len());
-            }
-        }
         Method::Raster => {
-            for (vertices, color) in get_polygons(image) {
+            for (vertices, color) in get_polygons(image, args.variance, args.lower_cut) {
                 let [red, green, blue, alpha] = color.0;
                 if alpha == 0 {
                     continue;
                 }
+
                 level.push(Entity::Paint {
                     fill_color: red as i32 * 16_i32.pow(4)
                         + green as i32 * 16_i32.pow(2)
@@ -136,6 +112,8 @@ fn main() {
         }
         Method::Svg => unimplemented!(),
     }
+
+    optimize::prune_aligned_vertices(&mut level);
 
     let file = match File::create(args.output.clone()) {
         Ok(f) => f,
