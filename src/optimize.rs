@@ -7,8 +7,10 @@ fn points_aligned(point1: &Point, point2: &Point, point3: &Point) -> bool {
 // https://github.com/getkey/ble/blob/339cd2028346f1198a476734c7f12d10912177c1/src/models/VerticesParams.ts#L107
 pub fn prune_aligned_vertices(level: &mut Level) {
     for entity in &mut level.entities {
-
-        if let Entity::Paint { ref mut vertices, .. } = entity {
+        if let Entity::Paint {
+            ref mut vertices, ..
+        } = entity
+        {
             let mut i = 0;
             while vertices.len() > 2 && i < vertices.len() {
                 let current = vertices[i];

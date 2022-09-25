@@ -13,7 +13,11 @@ fn approx(c1: Rgba<u8>, c2: Rgba<u8>, variance: u8) -> bool {
         .all(|(v1, v2)| v1.abs_diff(*v2) <= variance)
 }
 
-pub fn get_polygons(image: DynamicImage, variance: u8, lower_cut: i32) -> Vec<(Vec<Point>, Rgba<u8>)> {
+pub fn get_polygons(
+    image: DynamicImage,
+    variance: u8,
+    lower_cut: i32,
+) -> Vec<(Vec<Point>, Rgba<u8>)> {
     let (width, height) = image.dimensions();
     let mut visited = vec![vec![false; width as usize]; height as usize];
     let mut polygons: Vec<(Vec<Point>, Rgba<u8>)> = vec![];
@@ -76,7 +80,10 @@ pub fn get_polygons(image: DynamicImage, variance: u8, lower_cut: i32) -> Vec<(V
             }
         }
 
-        assert!(avg_color.0.iter().all(|v| (*v / (pixels as u32 + 1)) <= 255));
+        assert!(avg_color
+            .0
+            .iter()
+            .all(|v| (*v / (pixels as u32 + 1)) <= 255));
 
         // Ignore orphen pixels
         if pixels > lower_cut {

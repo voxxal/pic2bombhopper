@@ -1,8 +1,8 @@
 #![feature(array_zip)]
+use bombhopper::{Entity, Level};
 use clap::Parser;
-use image::GenericImageView;
-use bombhopper::{Entity, Level, Point};
-use log::{error, info, warn};
+use log::{error, info};
+use pic2bombhopper::{optimize, raster::get_polygons};
 use raster::get_polygons;
 use std::{
     fs::File,
@@ -10,9 +10,6 @@ use std::{
     path::PathBuf,
     process::exit,
 };
-
-mod raster;
-mod optimize;
 
 pub const NEIGHBORS: [(i32, i32); 4] = [(-1, 0), (1, 0), (0, -1), (0, 1)];
 
@@ -23,21 +20,6 @@ enum Method {
 
 #[derive(Debug, Parser)]
 struct Args {
-    #[clap(value_hint = clap::ValueHint::FilePath)]
-    image: PathBuf,
-    /// Output path
-    #[clap(short = 'o', value_parser, value_name = "path", value_hint = clap::ValueHint::FilePath, default_value = "./level.json")]
-    output: PathBuf,
-    /// Size of each pixel
-    #[clap(short = 's', value_parser, value_name = "scale", default_value = "20")]
-    scale: f32,
-    // How close the color of 2 pixels need to be for them to be merged
-    #[clap(short = 'v', value_parser, value_name = "variance", default_value = "6")]
-    variance: u8,
-    // If a polygon consists of less than this many pixels, remove it
-    #[clap(short = 'c', value_parser, value_name = "lower-cut", default_value = "8")]
-    lower_cut: i32,
-
     /// Name of level
     #[clap(
         short = 'n',
@@ -46,6 +28,31 @@ struct Args {
         default_value = "Created with pic2bombhopper"
     )]
     name: String,
+
+    #[clap(value_hint = clap::ValueHint::FilePath)]
+    image: PathBuf,
+    /// Output path
+    #[clap(short = 'o', value_parser, value_name = "path", value_hint = clap::ValueHint::FilePath, default_value = "./level.json")]
+    output: PathBuf,
+    /// Size of each pixel
+    #[clap(short = 's', value_parser, value_name = "scale", default_value = "10")]
+    scale: f32,
+    // How close the color of 2 pixels need to be for them to be merged
+    #[clap(
+        short = 'v',
+        value_parser,
+        value_name = "variance",
+        default_value = "6"
+    )]
+    variance: u8,
+    // If a polygon consists of less than this many pixels, remove it
+    #[clap(
+        short = 'c',
+        value_parser,
+        value_name = "lower-cut",
+        default_value = "8"
+    )]
+    lower_cut: i32,
 }
 
 fn main() {
@@ -81,7 +88,7 @@ fn main() {
             _ => (),
         },
         None => {
-            error!("File isn't an image.");
+            error!("File doesn't have file type.");
             exit(1)
         }
     }
@@ -93,6 +100,7 @@ fn main() {
             exit(1)
         }
     };
+
     match method {
         Method::Raster => {
             for (vertices, color) in get_polygons(image, args.variance, args.lower_cut) {
