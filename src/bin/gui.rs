@@ -132,62 +132,68 @@ impl eframe::App for Pic2Bombhopper {
             // i don't know how to improve this but i will :) probably involves moving stuff into functions
             if ui.button("Generate Map").clicked() {
                 if let Some(path) = &self.image_path {
-                    if let Ok(image) = image::open(path) {
-                        let mut level = Level::new(self.name.clone(), [0, 0]);
+                    match image::open(path) {
+                        Ok(image) => {
+                            let mut level = Level::new(self.name.clone(), [0, 0]);
 
-                        for (vertices, color) in get_polygons(image, self.variance, self.lower_cut)
-                        {
-                            let [red, green, blue, alpha] = color.0;
-                            if alpha == 0 {
-                                continue;
+                            for (vertices, color) in
+                                get_polygons(image, self.variance, self.lower_cut)
+                            {
+                                let [red, green, blue, alpha] = color.0;
+                                if alpha == 0 {
+                                    continue;
+                                }
+
+                                level.push(Entity::Paint {
+                                    fill_color: red as i32 * 16_i32.pow(4)
+                                        + green as i32 * 16_i32.pow(2)
+                                        + blue as i32,
+                                    opacity: (alpha as f32) / 255.0,
+                                    vertices: vertices
+                                        .into_iter()
+                                        .map(|p| p * self.scale)
+                                        .collect(),
+                                })
                             }
 
-                            level.push(Entity::Paint {
-                                fill_color: red as i32 * 16_i32.pow(4)
-                                    + green as i32 * 16_i32.pow(2)
-                                    + blue as i32,
-                                opacity: (alpha as f32) / 255.0,
-                                vertices: vertices.into_iter().map(|p| p * self.scale).collect(),
-                            })
-                        }
+                            optimize::prune_aligned_vertices(&mut level);
 
-                        optimize::prune_aligned_vertices(&mut level);
-
-                        if let Some(path) = rfd::FileDialog::new()
-                            .set_file_name("level.json")
-                            .save_file()
-                        {
-                            let file = match File::create(path.clone()) {
-                                Ok(f) => Some(f),
-                                Err(e) => {
-                                    self.status = Some(Err(format!(
-                                        "Failed to create output file ({:?}).",
-                                        e
-                                    )));
-                                    None
-                                }
-                            };
-
-                            if let Some(f) = file {
-                                match serde_json::to_writer(BufWriter::new(f), &level) {
-                                    Ok(_) => {
-                                        self.status = Some(Ok(format!(
-                                            "Successfully wrote to {}.",
-                                            path.display().to_string()
-                                        )))
-                                    }
+                            if let Some(path) = rfd::FileDialog::new()
+                                .set_file_name("level.json")
+                                .save_file()
+                            {
+                                let file = match File::create(path.clone()) {
+                                    Ok(f) => Some(f),
                                     Err(e) => {
                                         self.status = Some(Err(format!(
-                                            "Failed to write to file ({:?}).",
+                                            "Failed to create output file ({:?}).",
                                             e
                                         )));
+                                        None
+                                    }
+                                };
+
+                                if let Some(f) = file {
+                                    match serde_json::to_writer(BufWriter::new(f), &level) {
+                                        Ok(_) => {
+                                            self.status = Some(Ok(format!(
+                                                "Successfully wrote to {}.",
+                                                path.display().to_string()
+                                            )))
+                                        }
+                                        Err(e) => {
+                                            self.status = Some(Err(format!(
+                                                "Failed to write to file ({:?}).",
+                                                e
+                                            )));
+                                        }
                                     }
                                 }
                             }
                         }
-                    } else {
-                        self.status =
-                            Some(Err(String::from("That doesn't seem to be an image")));
+                        Err(e) => {
+                            self.status = Some(Err(format!("Failed to open image file ({:?})", e)));
+                        }
                     }
                 } else {
                     self.status = Some(Err(String::from(

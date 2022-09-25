@@ -49,7 +49,7 @@ pub fn get_polygons(
                 }
             }
 
-            if x + 1 < width {
+            if x + 1 < width  {
                 segment.get_pixel_mut(x + 1, y).0 = [255];
                 if !visited[x as usize + 1][y as usize]
                     && approx(current_color, image.get_pixel(x + 1, y), variance)
