@@ -27,7 +27,7 @@ pub fn get_polygons(
             continue;
         }
         let mut avg_color: Rgba<u32> = color.0.map(|v| v as u32).into();
-        let mut segment: GrayImage = ImageBuffer::from_pixel(width, height, Luma([0]));
+        let mut segment: GrayImage = ImageBuffer::from_pixel(width + 1, height + 1, Luma([0]));
 
         let mut pixels = 0;
         let mut queue = VecDeque::from(vec![(x, y)]);
