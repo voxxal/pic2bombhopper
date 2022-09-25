@@ -129,6 +129,7 @@ impl eframe::App for Pic2Bombhopper {
             //     "Generate Map"
             // };
 
+            // i don't know how to improve this but i will :) probably involves moving stuff into functions
             if ui.button("Generate Map").clicked() {
                 if let Some(path) = &self.image_path {
                     if let Ok(image) = image::open(path) {
@@ -186,7 +187,7 @@ impl eframe::App for Pic2Bombhopper {
                         }
                     } else {
                         self.status =
-                            Some(Err(String::from("That doesn't seem to be an image...")));
+                            Some(Err(String::from("That doesn't seem to be an image")));
                     }
                 } else {
                     self.status = Some(Err(String::from(
