@@ -3,7 +3,6 @@ use bombhopper::{Entity, Level};
 use clap::Parser;
 use log::{error, info};
 use pic2bombhopper::{optimize, raster::get_polygons};
-use raster::get_polygons;
 use std::{
     fs::File,
     io::{BufWriter, Write},
